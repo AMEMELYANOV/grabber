@@ -16,6 +16,12 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
+/**
+ * Планировщик заданий
+ *
+ * @author Alexander Emelyanov
+ * @version 1.0
+ */
 public class SchedulerJob {
     public static void main(String[] args) {
         Properties properties = loadProperties();
