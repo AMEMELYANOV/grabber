@@ -1,9 +1,8 @@
-package ru.job4j.grabber;
+package ru.job4j.grabber.parser;
 
-import java.io.IOException;
-import java.util.List;
 import ru.job4j.grabber.model.Post;
-import ru.job4j.grabber.utils.DateTimeParser;
+
+import java.util.List;
 
 /**
  * Парсер web страниц
@@ -19,9 +18,9 @@ public interface Parse {
      * информацией о вакансии. Для парсинга используется библиотека Jsoup.
      * Данные сохраняются в список объявлений.
      *
-     * @param url ссылка на ресурс для парсинга
-     * @param dateTimeParser парсер даты и времени
+     * @param sourceLink ссылка на сайт
+     * @param pageLink ссылка на ресурс
      * @return список объявлений
      */
-    List<Post> list(String url, DateTimeParser dateTimeParser) throws IOException;
+    List<Post> list(String sourceLink, String pageLink);
 }

@@ -1,8 +1,8 @@
 package ru.job4j.grabber.Store;
 
 import ru.job4j.grabber.model.Post;
-import java.sql.*;
 
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
