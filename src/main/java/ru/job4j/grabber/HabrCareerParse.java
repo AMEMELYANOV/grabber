@@ -5,19 +5,22 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.job4j.grabber.model.Post;
+import ru.job4j.grabber.utils.DateTimeParser;
+import ru.job4j.grabber.utils.HabrCareerDateTimeParser;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * Парсер web страниц
+ * Реализация парсера web страниц
  *
  * @author Alexander Emelyanov
  * @version 1.0
  */
-public class HabrCareerParse {
+public class HabrCareerParse implements Parse {
 
     /**
      * Ссылка на сайт
@@ -30,13 +33,27 @@ public class HabrCareerParse {
     private static final String PAGE_LINK = String.format("%s/vacancies/java_developer?page=", SOURCE_LINK);
 
     /**
+     * Счетчик объявлений
+     */
+    private int id = 1;
+
+    /**
+     * Список объявлений
+     */
+    private final List<Post> posts = new ArrayList<>();
+
+    /**
      * Выполняет парсинг страницы, находит и извлекает краткое содержание
      * вакансии, дату и время размещения и ссылку на страницу с подробной
      * информацией о вакансии. Для парсинга используется библиотека Jsoup.
+     * Данные сохраняются в список объявлений.
      *
      * @param url ссылка на ресурс для парсинга
+     * @param dateTimeParser парсер даты и времени
+     * @return список объявлений
      */
-    public static void parseUrl(String url) throws IOException {
+    @Override
+    public List<Post> list(String url, DateTimeParser dateTimeParser) throws IOException {
         Connection connection = Jsoup.connect(url);
         Document document = connection.get();
         Elements rows = document.select(".vacancy-card__inner");
@@ -48,8 +65,15 @@ public class HabrCareerParse {
                     .child(0).attr("datetime");
             String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
             String description = retrieveDescription(link);
-            System.out.printf("%s %s %s%n %s%n", vacancyName, link, vacancyDate);
+            posts.add(Post.builder()
+                    .id(id++)
+                    .title(vacancyName)
+                    .description(description)
+                    .link(link)
+                    .created(dateTimeParser.parse(vacancyDate))
+                    .build());
         });
+        return posts;
     }
 
     /**
@@ -58,8 +82,8 @@ public class HabrCareerParse {
      *
      * @param link ссылка страницу с описанием вакансии
      */
-    private static String retrieveDescription(String link) {
-        String description = "";
+    private String retrieveDescription(String link) {
+        String description;
         Connection connection = Jsoup.connect(link);
         try {
             Document document = connection.get();
@@ -71,11 +95,11 @@ public class HabrCareerParse {
     }
 
     public static void main(String[] args) throws IOException {
-        int numPages = 5;
+        DateTimeParser dateTimeParser = new HabrCareerDateTimeParser();
+        Parse parser = new HabrCareerParse();
+        int numPages = 3;
         for (int i = 1; i <= numPages; i++) {
-            System.out.println();
-            System.out.println("============================");
-            parseUrl(PAGE_LINK + i);
+            parser.list(PAGE_LINK + i, dateTimeParser);
         }
     }
 }
