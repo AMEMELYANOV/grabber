@@ -47,8 +47,27 @@ public class HabrCareerParse {
             String vacancyDate = Objects.requireNonNull(row.select(".vacancy-card__date").first())
                     .child(0).attr("datetime");
             String link = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-            System.out.printf("%s %s %s%n", vacancyName, link, vacancyDate);
+            String description = retrieveDescription(link);
+            System.out.printf("%s %s %s%n %s%n", vacancyName, link, vacancyDate);
         });
+    }
+
+    /**
+     * Выполняет парсинг страницы описания вакансии.
+     * Возвращает описание вакансии.
+     *
+     * @param link ссылка страницу с описанием вакансии
+     */
+    private static String retrieveDescription(String link) {
+        String description = "";
+        Connection connection = Jsoup.connect(link);
+        try {
+            Document document = connection.get();
+            description = document.select(".vacancy-description__text").first().text();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return description;
     }
 
     public static void main(String[] args) throws IOException {
