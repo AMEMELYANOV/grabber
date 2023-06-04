@@ -10,7 +10,12 @@ import ru.job4j.grabber.parser.HabrCareerParse;
 import ru.job4j.grabber.parser.Parse;
 import ru.job4j.grabber.utils.HabrCareerDateTimeParser;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -37,7 +42,12 @@ public class Grabber implements Grab {
     /**
      * Ссылка на ресурс
      */
-    private static final String PAGE_LINK = String.format("/vacancies/java_developer?page=");
+    private static final String PAGE_LINK = "/vacancies/java_developer?page=";
+
+    /**
+     * Конфигурация
+     */
+    private static final Properties cfg = new Properties();
 
     /**
      * Парсер
@@ -90,6 +100,33 @@ public class Grabber implements Grab {
     }
 
     /**
+     * Запускает сервер, отдающий данные по web запросу
+     * на localhost:[порт], где порт указан в application.properties.
+     *
+     * @param store хранилище данных
+     */
+    public void web(Store store) {
+        new Thread(() -> {
+            try (ServerSocket server = new ServerSocket(Integer.parseInt(cfg.getProperty("port")))) {
+                while (!server.isClosed()) {
+                    Socket socket = server.accept();
+                    try (OutputStream out = socket.getOutputStream()) {
+                        out.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
+                        for (Post post : store.getAll()) {
+                            out.write(post.toString().getBytes());
+                            out.write(System.lineSeparator().getBytes(Charset.forName("Windows-1251")));
+                        }
+                    } catch (IOException io) {
+                        io.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    /**
      * Выполняет переданную задачу.
      *
      * @author Alexander Emelyanov
@@ -113,11 +150,11 @@ public class Grabber implements Grab {
             int numPages = (Integer) map.get("numPages");
             List<Post> posts = new ArrayList<>();
             for (int i = 1; i <= numPages; i++) {
-                System.out.println(String.format("Start parse %d page", i));
+                System.out.printf("Start parse %d page%n", i);
                 posts.addAll(parse.list(SOURCE_LINK, PAGE_LINK + i));
             }
             for (Post post : posts) {
-                System.out.println("====");
+                System.out.println("Save post");
                 store.save(post);
             }
         }
@@ -130,7 +167,6 @@ public class Grabber implements Grab {
      * @param args аргументы командной строки
      */
     public static void main(String[] args) throws Exception {
-        var cfg = new Properties();
         try (InputStream in = Grabber.class.getClassLoader()
                 .getResourceAsStream("application.properties")) {
             cfg.load(in);
@@ -141,6 +177,8 @@ public class Grabber implements Grab {
         var store = new PsqlStore(cfg);
         var time = Integer.parseInt(cfg.getProperty("time"));
         var numPages = Integer.parseInt(cfg.getProperty("num.pages"));
-        new Grabber(parse, store, scheduler, time, numPages).init();
+        Grabber grab = new Grabber(parse, store, scheduler, time, numPages);
+        grab.init();
+        grab.web(store);
     }
 }
