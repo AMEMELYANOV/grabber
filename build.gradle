@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'checkstyle'
+    id 'org.liquibase.gradle' version '2.0.4'
 }
 
 group = 'ru.job4j'
@@ -37,6 +38,27 @@ dependencies {
     implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.2'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.27'
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.15.3'
+}
+
+dependencies {
+    liquibaseRuntime 'org.liquibase:liquibase-core:4.8.0'
+    liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:2.1.1'
+    liquibaseRuntime 'org.postgresql:postgresql'
+}
+apply plugin: "org.liquibase.gradle"
+
+def changelog = "${projectDir}/db/liquibase-changeLog.xml"
+
+liquibase {
+    activities {
+        main {
+            changeLogFile changelog
+            url 'jdbc:postgresql://127.0.0.1:5432/grabber'
+            username 'postgres'
+            password 'password'
+        }
+        runList = main
+    }
 }
 
 jar {
