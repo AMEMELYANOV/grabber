@@ -18,7 +18,7 @@ class HabrCareerDateTimeParserTest {
     void parseShouldReturnLocalDateTimeWhenSuccess() {
         HabrCareerDateTimeParser parser = new HabrCareerDateTimeParser();
         String dateTime = "2023-06-01T19:38:05+03:00";
-        LocalDateTime expected = LocalDateTime.of(2023, 6, 1, 19, 38,5);
+        LocalDateTime expected = LocalDateTime.of(2023, 6, 1, 19, 38, 5);
 
         LocalDateTime result = parser.parse(dateTime);
 

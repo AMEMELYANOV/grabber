@@ -3,8 +3,8 @@ package ru.job4j.grabber;
 import lombok.AllArgsConstructor;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
-import ru.job4j.grabber.Store.PsqlStore;
-import ru.job4j.grabber.Store.Store;
+import ru.job4j.grabber.store.PsqlStore;
+import ru.job4j.grabber.store.Store;
 import ru.job4j.grabber.model.Post;
 import ru.job4j.grabber.parser.HabrCareerParse;
 import ru.job4j.grabber.parser.Parse;
@@ -47,7 +47,7 @@ public class Grabber implements Grab {
     /**
      * Конфигурация
      */
-    private static final Properties cfg = new Properties();
+    private static final Properties CFG = new Properties();
 
     /**
      * Парсер
@@ -75,7 +75,7 @@ public class Grabber implements Grab {
     private final int numPages;
 
     /**
-     * Инициализирует планировщик.
+     * Конфигурирует планировщик.
      *
      * @throws SchedulerException при ошибках в работе приложения
      *                            при работе планировщика
@@ -107,14 +107,16 @@ public class Grabber implements Grab {
      */
     public void web(Store store) {
         new Thread(() -> {
-            try (ServerSocket server = new ServerSocket(Integer.parseInt(cfg.getProperty("port")))) {
+            try (ServerSocket server = new ServerSocket(Integer.parseInt(
+                    CFG.getProperty("port")))) {
                 while (!server.isClosed()) {
                     Socket socket = server.accept();
                     try (OutputStream out = socket.getOutputStream()) {
                         out.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
                         for (Post post : store.getAll()) {
                             out.write(post.toString().getBytes());
-                            out.write(System.lineSeparator().getBytes(Charset.forName("Windows-1251")));
+                            out.write(System.lineSeparator().getBytes(
+                                    Charset.forName("Windows-1251")));
                         }
                     } catch (IOException io) {
                         io.printStackTrace();
@@ -165,18 +167,19 @@ public class Grabber implements Grab {
      * Выполняет запуск приложения. Создание основных объектов.
      *
      * @param args аргументы командной строки
+     * @throws Exception при выбросе исключений создаваемыми объектами
      */
     public static void main(String[] args) throws Exception {
         try (InputStream in = Grabber.class.getClassLoader()
                 .getResourceAsStream("application.properties")) {
-            cfg.load(in);
+            CFG.load(in);
         }
         Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
         var parse = new HabrCareerParse(new HabrCareerDateTimeParser());
-        var store = new PsqlStore(cfg);
-        var time = Integer.parseInt(cfg.getProperty("time"));
-        var numPages = Integer.parseInt(cfg.getProperty("num.pages"));
+        var store = new PsqlStore(CFG);
+        var time = Integer.parseInt(CFG.getProperty("time"));
+        var numPages = Integer.parseInt(CFG.getProperty("num.pages"));
         Grabber grab = new Grabber(parse, store, scheduler, time, numPages);
         grab.init();
         grab.web(store);

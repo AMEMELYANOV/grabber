@@ -11,7 +11,7 @@ import org.quartz.SchedulerException;
 public interface Grab {
 
     /**
-     * Инициализирует планировщик.
+     * Конфигурирует планировщик.
      *
      * @throws SchedulerException при ошибках в работе приложения
      * при работе планировщика

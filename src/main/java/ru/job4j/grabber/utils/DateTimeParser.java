@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter;
 public interface DateTimeParser {
 
     /**
-     * Возвращает объект LocalDateTime. Из переданной в метод строки
+     * Возвращает объект LocalDateTime. Из переданной строки
      * формирует объект содержащий дату и время. Для преобразования
      * используется {@link LocalDateTime#parse(CharSequence, DateTimeFormatter)}
      *

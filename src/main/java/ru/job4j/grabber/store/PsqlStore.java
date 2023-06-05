@@ -1,4 +1,4 @@
-package ru.job4j.grabber.Store;
+package ru.job4j.grabber.store;
 
 import ru.job4j.grabber.model.Post;
 
@@ -12,9 +12,9 @@ import java.util.Properties;
  *
  * @author Alexander Emelyanov
  * @version 1.0
- * @see ru.job4j.grabber.Store.Store
+ * @see ru.job4j.grabber.store.Store
  */
-public class PsqlStore implements Store, AutoCloseable{
+public class PsqlStore implements Store, AutoCloseable {
 
     /**
      * Соединение с базой данных

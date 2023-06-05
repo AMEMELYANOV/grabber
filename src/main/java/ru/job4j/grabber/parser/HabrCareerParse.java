@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-
 /**
  * Реализация парсера web страниц
  *
@@ -35,6 +34,7 @@ public class HabrCareerParse implements Parse {
     /**
      * Конструктор. Принимает параметром парсер строки
      * даты и времени.
+     * @param dateTimeParser парсер даты и времени
      */
     public HabrCareerParse(DateTimeParser dateTimeParser) {
         this.dateTimeParser = dateTimeParser;
